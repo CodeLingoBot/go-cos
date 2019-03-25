@@ -49,10 +49,10 @@ func TestAuthorizationTransport(t *testing.T) {
 		}
 	})
 
-	client.client.Transport = &AuthorizationTransport{}
+	(client.Sender).(*DefaultSender).Transport = &AuthorizationTransport{}
 	req, _ := http.NewRequest("GET", client.BaseURL.BucketURL.String(), nil)
 	req.Header.Set("X-Testing", "0")
-	client.doAPI(context.Background(), req, nil, true)
+	client.doAPI(context.Background(), Caller{}, req, nil, true)
 }
 
 func TestAuthorizationTransport_skip_PresignedURL(t *testing.T) {
@@ -66,11 +66,11 @@ func TestAuthorizationTransport_skip_PresignedURL(t *testing.T) {
 		}
 	})
 
-	client.client.Transport = &AuthorizationTransport{}
+	(client.Sender).(*DefaultSender).Transport = &AuthorizationTransport{}
 	sign := "q-sign-algorithm=sha1&q-ak=QmFzZTY0IGlzIGEgZ2VuZXJp&q-sign-time=1480932292;1481012292&q-key-time=1480932292;1481012292&q-header-list=&q-url-param-list=&q-signature=a5de76b0734f084a7ea24413f7168b4bdbe5676c"
 	u := fmt.Sprintf("%s?sign=%s", client.BaseURL.BucketURL.String(), sign)
 	req, _ := http.NewRequest("GET", u, nil)
-	client.doAPI(context.Background(), req, nil, true)
+	client.doAPI(context.Background(), Caller{}, req, nil, true)
 }
 
 func TestAuthorizationTransport_with_another_transport(t *testing.T) {
@@ -85,12 +85,12 @@ func TestAuthorizationTransport_with_another_transport(t *testing.T) {
 	})
 
 	tr := &testingTransport{}
-	client.client.Transport = &AuthorizationTransport{
+	(client.Sender).(*DefaultSender).Transport = &AuthorizationTransport{
 		Transport: tr,
 	}
 	req, _ := http.NewRequest("GET", client.BaseURL.BucketURL.String(), nil)
 	req.Header.Set("X-Testing", "0")
-	client.doAPI(context.Background(), req, nil, true)
+	client.doAPI(context.Background(), Caller{}, req, nil, true)
 	if tr.called != 1 {
 		t.Error("AuthorizationTransport not call another Transport")
 	}
